@@ -1,5 +1,6 @@
 #include "SDL.h"
 #include <iostream>
+#include <stdio.h>
 class Game
 {
 public:
@@ -12,7 +13,7 @@ public:
 	
 	void handleEvents();
 	void update();
-	void render();
+	void render(int map[10][10], int xGridSize, int yGridSize);
 	void clean();
 
 	bool running() 
@@ -20,6 +21,7 @@ public:
 		return isRunning;
 	}
 private:
+	void drawMap(int map[10][10], int xGridSize, int yGridSize);
 	bool isRunning;
 	SDL_Window *window;
 	SDL_Renderer *renderer;
