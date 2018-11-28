@@ -1,5 +1,7 @@
 #include "Game.h"
 
+#define xResolution 800
+#define yResolution 600
 
 
 Game::Game()
@@ -10,6 +12,8 @@ Game::Game()
 Game::~Game()
 {
 }
+
+int xPosPlayer = 100, yPosPlayer = 100;
 
 void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
@@ -53,7 +57,40 @@ void Game::handleEvents()
 		case SDL_QUIT:
 			isRunning = false;
 			break;
-
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.sym)
+			{
+			case SDLK_w:
+				yPosPlayer--;
+				if (yPosPlayer <= 0)
+				{
+					yPosPlayer = 0;
+				}
+				break;
+			case SDLK_a:
+				xPosPlayer--;
+				if (xPosPlayer <= 0)
+				{
+					xPosPlayer = 0;
+				}
+				break;
+			case SDLK_d:
+				xPosPlayer++;
+				if (xPosPlayer >= xResolution)
+				{
+					xPosPlayer = xResolution;
+				}
+				break;
+			case SDLK_s:
+				yPosPlayer++;
+				if (yPosPlayer >= yResolution)
+				{
+					yPosPlayer = yResolution;
+				}
+				break;
+			default:
+				break;
+			}
 		default:
 			break;
 	}
@@ -61,17 +98,23 @@ void Game::handleEvents()
 
 void Game::update()
 {
-
+	SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255);
+	SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(renderer, 250, 0, 0, 255);
+	SDL_RenderDrawLine(renderer, xPosPlayer, yPosPlayer, xPosPlayer, yPosPlayer - 20);
+	
+	
+	std::cout << xPosPlayer << yPosPlayer << std::endl;
+	
 }
 
 void Game::render(int map[10][10], int xGridSize, int yGridSize)
 {
 	//Sets background colour for clear command
-	SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255);
-	SDL_RenderClear(renderer);
+	
 
 	//Setup Actual draw colour
-	SDL_SetRenderDrawColor(renderer, 242, 0, 0, 255);#
+	SDL_SetRenderDrawColor(renderer, 242, 0, 0, 255);
 
 	//Draws 2D Map
 	drawMap(map, xGridSize, yGridSize);
@@ -94,7 +137,6 @@ void Game::drawMap(int map[10][10], int xGridSize, int yGridSize)
 	int xMapPos, yMapPos, xPos = 0, yPos = 0, xPosReal, yPosReal, cell;
 	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 	while (yPos < yGridSize)
-		
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		cell = map[yPos][xPos];
@@ -114,6 +156,5 @@ void Game::drawMap(int map[10][10], int xGridSize, int yGridSize)
 			xPos = 0;
 			yPos++;
 		}
-
 	}
 }

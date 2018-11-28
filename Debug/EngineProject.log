@@ -1,2 +1,4 @@
-﻿  Source.cpp
+﻿  Game.cpp
+c:\sdl\engineproject\game.cpp(137): warning C4101: 'yMapPos': unreferenced local variable
+c:\sdl\engineproject\game.cpp(137): warning C4101: 'xMapPos': unreferenced local variable
   EngineProject.vcxproj -> C:\SDL\EngineProject\Debug\EngineProject.exe
