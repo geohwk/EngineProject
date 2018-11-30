@@ -2,6 +2,7 @@
 
 #define xResolution 800
 #define yResolution 600
+#define radians (5*M_PI)/6
 
 
 Game::Game()
@@ -13,7 +14,9 @@ Game::~Game()
 {
 }
 
-int xPosPlayer = 100, yPosPlayer = 100;
+int xPosPlayer = 100, yPosPlayer = 100, xPlayerView = xPosPlayer, yPlayerView = yPosPlayer - 20, bearing = 90, r = 20;
+double bearingRads, reverseBearing;
+bool interset, viewComplete;
 
 void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
@@ -61,28 +64,50 @@ void Game::handleEvents()
 			switch (event.key.keysym.sym)
 			{
 			case SDLK_w:
-				yPosPlayer--;
+				yPlayerView = yPosPlayer - (cos(bearingRads)*(r + 1));
+				xPlayerView = xPosPlayer + (sin(bearingRads)*(r + 1));
+				reverseBearing = bearing + 180;
+				reverseBearing = reverseBearing * (M_PI / 180);
+				xPosPlayer = xPlayerView - sin(reverseBearing)*r;
+				yPosPlayer = yPlayerView + cos(reverseBearing)*r;
+				
 				if (yPosPlayer <= 0)
 				{
 					yPosPlayer = 0;
 				}
 				break;
 			case SDLK_a:
-				xPosPlayer--;
+				bearing = bearing - 5;
+				if (bearing == -5)
+				{
+					bearing = 355;
+				}
 				if (xPosPlayer <= 0)
 				{
 					xPosPlayer = 0;
+					//xPosPlayer = 0;
 				}
 				break;
 			case SDLK_d:
-				xPosPlayer++;
+				bearing = bearing + 5;
+				if (bearing == 360)
+				{
+					bearing = 0;
+				}
+				
 				if (xPosPlayer >= xResolution)
 				{
 					xPosPlayer = xResolution;
+					//xPosPlayer = xResolution;
 				}
 				break;
 			case SDLK_s:
-				yPosPlayer++;
+				yPlayerView = yPosPlayer + (cos(bearingRads)*(r - 1));
+				xPlayerView = xPosPlayer - (sin(bearingRads)*(r - 1));
+				reverseBearing = bearing + 180;
+				reverseBearing = reverseBearing * (M_PI / 180);
+				xPosPlayer = xPlayerView + sin(reverseBearing)*r;
+				yPosPlayer = yPlayerView - cos(reverseBearing)*r;
 				if (yPosPlayer >= yResolution)
 				{
 					yPosPlayer = yResolution;
@@ -94,18 +119,41 @@ void Game::handleEvents()
 		default:
 			break;
 	}
+	bearingRads = bearing * (M_PI / 180);
+	std::cout << bearing << std::endl;
 }
 
 void Game::update()
 {
 	SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255);
 	SDL_RenderClear(renderer);
+	
+	
 	SDL_SetRenderDrawColor(renderer, 250, 0, 0, 255);
-	SDL_RenderDrawLine(renderer, xPosPlayer, yPosPlayer, xPosPlayer, yPosPlayer - 20);
+	movement();
+	view();
 	
 	
-	std::cout << xPosPlayer << yPosPlayer << std::endl;
 	
+	std::cout << bearing << std::endl;
+	
+}
+
+void Game::movement()
+{
+
+}
+
+void Game::view()
+{
+	//while (!viewComplete)
+	//{
+	xPlayerView = sin(bearingRads)*r;
+	yPlayerView = cos(bearingRads)*r;
+	xPlayerView = xPosPlayer + xPlayerView;
+	yPlayerView = yPosPlayer - yPlayerView;
+	SDL_RenderDrawLine(renderer, xPosPlayer, yPosPlayer, xPlayerView, yPlayerView);
+	//}
 }
 
 void Game::render(int map[10][10], int xGridSize, int yGridSize)

@@ -22,6 +22,8 @@ public:
 	}
 private:
 	void drawMap(int map[10][10], int xGridSize, int yGridSize);
+	void view();
+	void movement();
 	bool isRunning;
 	SDL_Window *window;
 	SDL_Renderer *renderer;
