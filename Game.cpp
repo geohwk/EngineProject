@@ -68,7 +68,7 @@ void Game::handleEvents()
 				yPlayerView = yPosPlayer - (cos(bearingRads)*(r + 1));
 				xPlayerView = xPosPlayer + (sin(bearingRads)*(r + 1));
 				reverseBearing = bearing + 180;
-				reverseBearing = reverseBearing * (M_PI / 180);
+				reverseBearingRads = reverseBearing * (M_PI / 180);
 				xPosPlayer = xPlayerView - sin(reverseBearingRads)*r;
 				yPosPlayer = yPlayerView + cos(reverseBearingRads)*r;
 				
@@ -105,9 +105,9 @@ void Game::handleEvents()
 				yPlayerView = yPosPlayer + (cos(bearingRads)*(r - 1));
 				xPlayerView = xPosPlayer - (sin(bearingRads)*(r - 1));
 				reverseBearing = bearing + 180;
-				reverseBearing = reverseBearing * (M_PI / 180);
-				xPosPlayer = xPlayerView + sin(reverseBearing)*r;
-				yPosPlayer = yPlayerView - cos(reverseBearing)*r;
+				reverseBearingRads = reverseBearing * (M_PI / 180);
+				xPosPlayer = xPlayerView + sin(reverseBearingRads)*r;
+				yPosPlayer = yPlayerView - cos(reverseBearingRads)*r;
 				if (yPosPlayer >= yResolution)
 				{
 					yPosPlayer = yResolution;
@@ -130,7 +130,7 @@ void Game::update()
 	
 	
 	SDL_SetRenderDrawColor(renderer, 250, 0, 0, 255);
-	collisionCheck(xPosPlayer, yPosPlayer);
+	//collisionCheck(xPosPlayer, yPosPlayer);
 	view();
 	
 	
@@ -146,7 +146,7 @@ void Game::movement()
 
 void Game::collisionCheck(int xPosPlayer, int yPosPlayer)
 {
-	SDL_IntersectRectAndLine( )
+	
 }
 
 void Game::view()
@@ -184,60 +184,63 @@ void Game::clean()
 void Game::drawMap(int map[10][10], int xGridSize, int yGridSize)
 
 {
-	int xMapPos, yMapPos, xPos = 0, yPos = 0, xPosReal, yPosReal, cell, cellMemory, orginXPos = 1000, originYPos;
+	int xMapPos, yMapPos, xPos = 0, yPos = 0, xPosReal, yPosReal, cell, cellXMemory = 0, cellYMemory = 0, originXPos = 1000, originYPos;
 	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 	while (yPos < yGridSize)
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		cell = map[yPos][xPos];
-		if ((yPos || xPos) == 0)
+		if ( xPos == 0)
 		{
-			cellMemory == 0;
-		}
-		else if(xPos == 0)
-		{
-			cellMemory = 0;
+			cellXMemory = 0;
 		}
 		else
 		{
-			cellMemory = map[yPos][xPos - 1];
+			cellXMemory = map[yPos][xPos - 1];
 		}
 		if (cell == 1)
 		{
-			if (cellMemory == 1)
+			if (cellXMemory == 1)
 			{
 				//do nothing, we're waiting for the end point of the rectangle
 			}
 			else
 			{
 				//Create origin of rectangle as previous cell is not drawn
-				orginXPos = xPos;
+				originXPos = xPos;
 				originYPos = yPos;
 			}
 			
 		}
 		if (cell == 0)
 		{
-			if (orginXPos == 1000)
+			if (originXPos == 1000)
 			{
 				//No origin has been set therefore we don't draw anything 
 			}
 			else
 			{
 				//Origin has been set therefore we need to draw a rectangle from origin X, Y and cellMemory
-				if (xPos == 0) { xPosReal = 0; }
-				else { xPosReal = ((xPos + 1) * 800 / xGridSize) - (800 / yGridSize); }
-				if (yPos == 0) { yPosReal = 0; }
-				else { yPosReal = ((yPos + 1) * 600 / yGridSize) - (600 / yGridSize); }
+				if (originXPos == 0) { xPosReal = 0; }
+				else { xPosReal = ((originXPos + 1) * 800 / xGridSize) - (800 / yGridSize); }
+				if (originYPos == 0) { yPosReal = 0; }
+				else { yPosReal = ((originYPos + 1) * 600 / yGridSize) - (600 / yGridSize); }
 
-				SDL_Rect wall = { xPosReal, yPosReal, 800 / xGridSize*(xPos + 1), 600 / yGridSize*(yPos + 1) };
+				SDL_Rect wall = { xPosReal, yPosReal, (800 / xGridSize)*(xPos - originXPos), 600 / yGridSize };
 				SDL_RenderDrawRect(renderer, &wall);
-				
+				originXPos = 1000;
 			}
 		}
 		xPos++;
 		if (xPos > xGridSize - 1) 
 		{
+			if (originXPos == 0) { xPosReal = 0; }
+			else { xPosReal = ((originXPos + 1) * 800 / xGridSize) - (800 / yGridSize); }
+			if (originYPos == 0) { yPosReal = 0; }
+			else { yPosReal = ((originYPos + 1) * 600 / yGridSize) - (600 / yGridSize); }
+			SDL_Rect wall = { xPosReal, yPosReal, (800 / xGridSize) * (xPos), 600 / yGridSize };
+			SDL_RenderDrawRect(renderer, &wall);
+			originXPos = 1000;
 			xPos = 0;
 			yPos++;
 		}
