@@ -10,7 +10,7 @@ public:
 	~Game();
 
 	void init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
-	
+	void collisionCheck(int xPosPlayer, int yPosPlayer);
 	void handleEvents();
 	void update();
 	void render(int map[10][10], int xGridSize, int yGridSize);

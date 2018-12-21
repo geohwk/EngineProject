@@ -1,14 +1,16 @@
 ﻿  Game.cpp
-c:\sdl\engineproject\game.cpp(67): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 c:\sdl\engineproject\game.cpp(68): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(71): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(69): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 c:\sdl\engineproject\game.cpp(72): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(73): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 c:\sdl\engineproject\game.cpp(105): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 c:\sdl\engineproject\game.cpp(106): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 c:\sdl\engineproject\game.cpp(109): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 c:\sdl\engineproject\game.cpp(110): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(151): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(152): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(185): warning C4101: 'yMapPos': unreferenced local variable
-c:\sdl\engineproject\game.cpp(185): warning C4101: 'xMapPos': unreferenced local variable
+c:\sdl\engineproject\game.cpp(154): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(155): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(187): warning C4101: 'yMapPos': unreferenced local variable
+c:\sdl\engineproject\game.cpp(187): warning C4101: 'xMapPos': unreferenced local variable
+  Source.cpp
+  Generating Code...
   EngineProject.vcxproj -> C:\SDL\EngineProject\Debug\EngineProject.exe
