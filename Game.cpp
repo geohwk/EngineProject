@@ -5,9 +5,11 @@
 #define yResolution 600
 #define radians (5*M_PI)/6
 #define FOV 80
-#define ScanRes 10 //1/0.1
-#define VerticalStretch 15
+#define ScanRes 0.5 //1/0.1
+#define WallHeight 25
 #define RotationMultiplier 2
+
+using namespace std;
 
 Game::Game()
 {
@@ -19,16 +21,20 @@ Game::~Game()
 }
 
 int colour;
-char scannedViewColour[FOV];
-int scannedViewX[FOV];
-int scannedViewY[FOV];
+float scannedViewAngle[FOV*2];
+char scannedViewColour[FOV*2];
+int scannedViewX[FOV*2];
+int scannedViewY[FOV*2];
 int viewPointCount = 0;
+
+
 
 int posMemory[5] = { 100, 100, 100, 80, 90 };
 int distanceMultiplier = 5;
 double xPosPlayer = posMemory[0], yPosPlayer = posMemory[2], xPlayerView = posMemory[1], yPlayerView = posMemory[3], bearing = posMemory[4], r = 20;
 double bearingRads, reverseBearing, reverseBearingRads;
 bool interset, viewComplete;
+
 
 void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
@@ -70,6 +76,20 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 		std::cout << "SDL initialisation failed!" << std::endl;
 		isRunning = false;
 	}
+
+
+	Loading_Surf = SDL_LoadBMP("C:/bricks.bmp");
+	if (Loading_Surf == NULL)
+	{
+		cout << "Unable to load image" << endl;
+	}
+	Brick_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+
+	SDL_FreeSurface(Loading_Surf);
+
+
+	//SDL_Surface()
+	//SDL_Texture* brickTexture = SDL_CreateTexture(rendererView, "brickTexture.jpg");
 }
 
 void Game::handleEvents(int map[xGrid][yGrid])
@@ -116,7 +136,6 @@ void Game::handleEvents(int map[xGrid][yGrid])
 				if (xPosPlayer <= 0)
 				{
 					xPosPlayer = 0;
-					//xPosPlayer = 0;
 				}
 				break;
 			case SDLK_d:
@@ -171,6 +190,7 @@ void Game::update(int map[xGrid][yGrid])
 	
 	SDL_SetRenderDrawColor(rendererMap, 250, 0, 0, 255);
 	scan(map);
+	SDL_SetRenderDrawColor(rendererMap, 0, 250, 0, 255);
 	view();
 }
 
@@ -189,9 +209,9 @@ void Game::scan(int map[xGrid][yGrid])
 	}
 	int flag = 0;
 	double dist = 1;
+	
 	while (leftBearing != rightBearing)
 	{
-		//Left most line in fpv goes weird when any rays are crossing the 360 mark, possibly somethung to do with the changing of bearing at this point.
 		flag = 0;
 		leftBearingRads = leftBearing * (M_PI / 180);
 		while (flag == 0)
@@ -202,6 +222,7 @@ void Game::scan(int map[xGrid][yGrid])
 			leftScanY = yPosPlayer - leftScanY;
 			if (collisionCheck(map, leftScanX, leftScanY) == true)
 			{
+				scannedViewAngle[viewPointCount] = bearing - leftBearing;
 				scannedViewColour[viewPointCount] = colour;
 				scannedViewX[viewPointCount] = leftScanX;
 				scannedViewY[viewPointCount] = leftScanY;
@@ -215,7 +236,7 @@ void Game::scan(int map[xGrid][yGrid])
 			}
 		}
 		dist = 1;
-		leftBearing = leftBearing + 1;
+		leftBearing = leftBearing + ScanRes;
 		if (leftBearing > 360)
 		{
 			leftBearing = 0 + 1;
@@ -259,45 +280,65 @@ void Game::view()
 	xPlayerView = xPosPlayer + xPlayerView;
 	yPlayerView = yPosPlayer - yPlayerView;
 	SDL_RenderDrawLine(rendererMap, xPosPlayer, yPosPlayer, xPlayerView, yPlayerView);
+
+	
+
 	
 	
+
+
+	
+	int textureX = 0;
 	int count = 0;
 	double d, h, yTop, yBottom, x = 0, theta, m1, m2;
-	while (count < FOV)
+	while (count < (FOV*2))
 	{
-		//m1 = (yPlayerView - yPosPlayer) / (xPlayerView - xPosPlayer);
-		//m2 = (scannedViewY[count] - yPosPlayer) / (scannedViewX[count] - xPosPlayer);
-		//theta = atan(abs((m2 - m1) / (1 + m1 * m2)));
-		d = sqrt(pow((xPosPlayer - scannedViewX[count]), 2) + pow((yPosPlayer - scannedViewY[count]), 2));
-		//d = cos(theta)*sqrt(pow((xPosPlayer - scannedViewX[count]), 2) + pow((yPosPlayer - scannedViewY[count]), 2));
-		h = yResolution / d * VerticalStretch;
+		d = cos(scannedViewAngle[count] * (M_PI / 180))*sqrt(pow((xPosPlayer - scannedViewX[count]), 2) + pow((yPosPlayer - scannedViewY[count]), 2));
+		h = yResolution / d * WallHeight;
 		yTop = yResolution / 2 + h / 2;
 		yBottom = yResolution / 2 - h / 2;
 		SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
 		double xStore = x;
-		while (x <= (xStore + xResolution / FOV))
+
+		if (scannedViewColour[count] == 1)
 		{
-			if (scannedViewColour[count] == 1)
-			{
-				SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
-			}
-			if (scannedViewColour[count] == 2)
-			{
-				SDL_SetRenderDrawColor(rendererView, 250, 250, 0, 255);
-			}
-			if (scannedViewColour[count] == 3)
-			{
-				SDL_SetRenderDrawColor(rendererView, 0, 250, 250, 255);
-			}
-			
-			SDL_RenderDrawLine(rendererView, x, yTop, x, yBottom);
-			SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
-			SDL_RenderDrawLine(rendererView, x, yTop, x, yResolution);
-			SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
-			SDL_RenderDrawLine(rendererView, x, yBottom, x, 0);
-			x++;
+			SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
 		}
-		x = xStore + xResolution / FOV;
+		if (scannedViewColour[count] == 2)
+		{
+			SDL_SetRenderDrawColor(rendererView, 250, 250, 0, 255);
+		}
+		if (scannedViewColour[count] == 3)
+		{
+			SDL_SetRenderDrawColor(rendererView, 0, 250, 250, 255);
+		}
+
+		SDL_Rect wall = { x, yResolution - yTop, fabs(((xStore + xResolution) / (FOV / ScanRes))) , yTop - yBottom };
+		//SDL_RenderFillRect(rendererView, &wall);
+		//SDL_RenderCopy(rendererView, Brick_Tx, NULL, NULL);
+
+		
+		textureX++;
+
+		if (textureX > 200)
+		{
+			textureX = 0;
+		}
+
+		SDL_Rect wallex = { textureX, 0, xStore + xResolution / (FOV / ScanRes), 200  };
+
+		SDL_RenderCopy(rendererView, Brick_Tx, &wallex, &wall);
+		//SDL_RenderPresent(rendererView);
+
+		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
+		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yTop};
+		SDL_RenderFillRect(rendererView, &ceiling);
+			
+		SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
+		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yBottom};
+		SDL_RenderFillRect(rendererView, &floor);
+
+		x = xStore + xResolution / (FOV/ScanRes);
 		count++;
 	}
 

@@ -1,7 +1,7 @@
 #include "Game.h"
 #define xGridSize 20
 #define yGridSize 20
-
+using namespace std;
 Game *game = nullptr;
 int map[xGridSize][yGridSize] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 								  3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
@@ -26,6 +26,8 @@ int map[xGridSize][yGridSize] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 int main(int argc, char * argv[])
 {
 	
+
+
 	game = new Game();
 
 	game->init("Map View", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);

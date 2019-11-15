@@ -1,6 +1,8 @@
 #include "SDL.h"
 #include <iostream>
 #include <stdio.h>
+#include <chrono>
+#include <thread>
 #define xGrid 20
 #define yGrid 20
 class Game
@@ -32,5 +34,7 @@ private:
 	SDL_Window *viewWindow;
 	SDL_Renderer *rendererMap;
 	SDL_Renderer *rendererView;
+	SDL_Surface* Loading_Surf;
+	SDL_Texture* Brick_Tx;
 };
 
