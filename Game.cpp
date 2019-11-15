@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <string>
 #define xGrid 20
 #define yGrid 20
 #define xResolution 800
@@ -7,7 +8,7 @@
 #define FOV 80
 #define ScanRes 0.5 //1/0.1
 #define WallHeight 25
-#define RotationMultiplier 2
+#define RotationMultiplier 1
 
 using namespace std;
 
@@ -28,9 +29,9 @@ int scannedViewY[FOV*2];
 int viewPointCount = 0;
 
 
-
+const int FRAMES_PER_SECOND = 60;
 int posMemory[5] = { 100, 100, 100, 80, 90 };
-int distanceMultiplier = 5;
+int distanceMultiplier = 3;
 double xPosPlayer = posMemory[0], yPosPlayer = posMemory[2], xPlayerView = posMemory[1], yPlayerView = posMemory[3], bearing = posMemory[4], r = 20;
 double bearingRads, reverseBearing, reverseBearingRads;
 bool interset, viewComplete;
@@ -78,104 +79,107 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 
 
-	Loading_Surf = SDL_LoadBMP("C:/bricks.bmp");
+	Loading_Surf = SDL_LoadBMP("bricks.bmp");
 	if (Loading_Surf == NULL)
 	{
 		cout << "Unable to load image" << endl;
 	}
 	Brick_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
 
+	Loading_Surf = SDL_LoadBMP("cobble.bmp");
+	if (Loading_Surf == NULL)
+	{
+		cout << "Unable to load image" << endl;
+	}
+	Cobble_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+
+	Loading_Surf = SDL_LoadBMP("sky.bmp");
+	if (Loading_Surf == NULL)
+	{
+		cout << "Unable to load image" << endl;
+	}
+	Sky_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+
+
 	SDL_FreeSurface(Loading_Surf);
 
-
-	//SDL_Surface()
-	//SDL_Texture* brickTexture = SDL_CreateTexture(rendererView, "brickTexture.jpg");
 }
 
 void Game::handleEvents(int map[xGrid][yGrid])
 {
 	bearingRads = bearing * (M_PI / 180);
 	SDL_Event event;
-	SDL_PollEvent(&event);
-	switch (event.type) 
+	bool keyDown = false;
+	string currentKey;
+	const Uint8* keystate = SDL_GetKeyboardState(NULL);
+	SDL_PumpEvents();
+	if (keystate[SDL_SCANCODE_A])
 	{
-		case SDL_QUIT:
-			isRunning = false;
-			break;
-		case SDL_KEYDOWN:
-			switch (event.key.keysym.sym)
-			{
-			case SDLK_w:
-				xPosPlayer = xPosPlayer + sin(bearingRads) * distanceMultiplier;
-				yPosPlayer = yPosPlayer - cos(bearingRads) * distanceMultiplier;
-
-				xPlayerView = xPlayerView + sin(bearingRads) * distanceMultiplier;
-				yPlayerView = yPlayerView - cos(bearingRads) * distanceMultiplier;
-				if (yPosPlayer <= 0)
-				{
-					yPosPlayer = 0;
-				}
-				if (collisionCheck(map, xPosPlayer, yPosPlayer) == true)
-				{
-					xPosPlayer = posMemory[0];
-					xPlayerView = posMemory[1];
-					yPosPlayer = posMemory[2];
-					yPlayerView = posMemory[3];
-				}
-				posMemory[0] = xPosPlayer;
-				posMemory[1] = xPlayerView;
-				posMemory[2] = yPosPlayer;
-				posMemory[3] = yPlayerView;
-				break;
-			case SDLK_a:
-				bearing = bearing - RotationMultiplier;
-				if (bearing == (0 - RotationMultiplier))
-				{
-					bearing = 360 - RotationMultiplier;
-				}
-				if (xPosPlayer <= 0)
-				{
-					xPosPlayer = 0;
-				}
-				break;
-			case SDLK_d:
-				bearing = bearing + RotationMultiplier;
-				if (bearing == 360)
-				{
-					bearing = 0;
-				}
-				
-				if (xPosPlayer >= xResolution)
-				{
-					xPosPlayer = xResolution;
-				}
-				break;
-			case SDLK_s:
-				xPosPlayer = xPosPlayer - sin(bearingRads) * distanceMultiplier;
-				yPosPlayer = yPosPlayer + cos(bearingRads) * distanceMultiplier;
-				xPlayerView = xPlayerView - sin(bearingRads) * distanceMultiplier;
-				yPlayerView = yPlayerView + cos(bearingRads) * distanceMultiplier;
-				if (yPosPlayer >= yResolution)
-				{
-					yPosPlayer = yResolution;
-				}
-				if (collisionCheck(map, xPosPlayer, yPosPlayer) == true)
-				{
-					xPosPlayer = posMemory[0];
-					xPlayerView = posMemory[1];
-					yPosPlayer = posMemory[2];
-					yPlayerView = posMemory[3];
-				}
-				posMemory[0] = xPosPlayer;
-				posMemory[1] = xPlayerView;
-				posMemory[2] = yPosPlayer;
-				posMemory[3] = yPlayerView;
-				break;
-			default:
-				break;
-			}
-		default:
-			break;
+		bearing = bearing - RotationMultiplier;
+		if (bearing == (0 - RotationMultiplier))
+		{
+			bearing = 360 - RotationMultiplier;
+		}
+		if (xPosPlayer <= 0)
+		{
+			xPosPlayer = 0;
+		}
+	}
+	else if(keystate[SDL_SCANCODE_W])
+	{
+		xPosPlayer = xPosPlayer + sin(bearingRads) * distanceMultiplier;
+		yPosPlayer = yPosPlayer - cos(bearingRads) * distanceMultiplier;
+		xPlayerView = xPlayerView + sin(bearingRads) * distanceMultiplier;
+		yPlayerView = yPlayerView - cos(bearingRads) * distanceMultiplier;
+		if (yPosPlayer <= 0)
+		{
+			yPosPlayer = 0;
+		}
+		if (collisionCheck(map, xPosPlayer, yPosPlayer) == true)
+		{
+			xPosPlayer = posMemory[0];
+			xPlayerView = posMemory[1];
+			yPosPlayer = posMemory[2];
+			yPlayerView = posMemory[3];
+		}
+		posMemory[0] = xPosPlayer;
+		posMemory[1] = xPlayerView;
+		posMemory[2] = yPosPlayer;
+		posMemory[3] = yPlayerView;
+	}
+	else if(keystate[SDL_SCANCODE_S])
+	{
+		xPosPlayer = xPosPlayer - sin(bearingRads) * distanceMultiplier;
+		yPosPlayer = yPosPlayer + cos(bearingRads) * distanceMultiplier;
+		xPlayerView = xPlayerView - sin(bearingRads) * distanceMultiplier;
+		yPlayerView = yPlayerView + cos(bearingRads) * distanceMultiplier;
+		if (yPosPlayer >= yResolution)
+		{
+			yPosPlayer = yResolution;
+		}
+		if (collisionCheck(map, xPosPlayer, yPosPlayer) == true)
+		{
+			xPosPlayer = posMemory[0];
+			xPlayerView = posMemory[1];
+			yPosPlayer = posMemory[2];
+			yPlayerView = posMemory[3];
+		}
+		posMemory[0] = xPosPlayer;
+		posMemory[1] = xPlayerView;
+		posMemory[2] = yPosPlayer;
+		posMemory[3] = yPlayerView;
+	}
+	else if(keystate[SDL_SCANCODE_D])
+	{
+		bearing = bearing + RotationMultiplier;
+		if (bearing == 360)
+		{
+			bearing = 0;
+		}
+		if (xPosPlayer >= xResolution)
+		{
+			xPosPlayer = xResolution;
+		}
 	}
 	bearingRads = bearing * (M_PI / 180);
 }
@@ -239,7 +243,7 @@ void Game::scan(int map[xGrid][yGrid])
 		leftBearing = leftBearing + ScanRes;
 		if (leftBearing > 360)
 		{
-			leftBearing = 0 + 1;
+			leftBearing = ScanRes;
 		}
 	}
 	viewPointCount = 0;
@@ -280,16 +284,9 @@ void Game::view()
 	xPlayerView = xPosPlayer + xPlayerView;
 	yPlayerView = yPosPlayer - yPlayerView;
 	SDL_RenderDrawLine(rendererMap, xPosPlayer, yPosPlayer, xPlayerView, yPlayerView);
-
-	
-
-	
-	
-
-
-	
 	int textureX = 0;
 	int count = 0;
+	string desiredTx;
 	double d, h, yTop, yBottom, x = 0, theta, m1, m2;
 	while (count < (FOV*2))
 	{
@@ -300,18 +297,7 @@ void Game::view()
 		SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
 		double xStore = x;
 
-		if (scannedViewColour[count] == 1)
-		{
-			SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
-		}
-		if (scannedViewColour[count] == 2)
-		{
-			SDL_SetRenderDrawColor(rendererView, 250, 250, 0, 255);
-		}
-		if (scannedViewColour[count] == 3)
-		{
-			SDL_SetRenderDrawColor(rendererView, 0, 250, 250, 255);
-		}
+		
 
 		SDL_Rect wall = { x, yResolution - yTop, fabs(((xStore + xResolution) / (FOV / ScanRes))) , yTop - yBottom };
 		//SDL_RenderFillRect(rendererView, &wall);
@@ -320,19 +306,38 @@ void Game::view()
 		
 		textureX++;
 
+		/*
 		if (textureX > 200)
 		{
 			textureX = 0;
 		}
+		*/
+		SDL_Rect wallex = { x, 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200  };
 
-		SDL_Rect wallex = { textureX, 0, xStore + xResolution / (FOV / ScanRes), 200  };
-
-		SDL_RenderCopy(rendererView, Brick_Tx, &wallex, &wall);
+		if (scannedViewColour[count] == 1)
+		{
+			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
+			//SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
+		}
+		if (scannedViewColour[count] == 2)
+		{
+			
+			SDL_RenderCopy(rendererView, Brick_Tx, &wallex, &wall);
+			//SDL_SetRenderDrawColor(rendererView, 250, 250, 0, 255);
+		}
+		if (scannedViewColour[count] == 3)
+		{
+			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
+			//desiredTx = "Brick_Tx";
+			//SDL_SetRenderDrawColor(rendererView, 0, 250, 250, 255);
+		}
+		
 		//SDL_RenderPresent(rendererView);
 
 		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
 		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yTop};
-		SDL_RenderFillRect(rendererView, &ceiling);
+		SDL_RenderCopy(rendererView, Sky_Tx, &ceiling, &ceiling);
+		//SDL_RenderFillRect(rendererView, &ceiling);
 			
 		SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
 		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yBottom};

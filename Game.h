@@ -36,5 +36,7 @@ private:
 	SDL_Renderer *rendererView;
 	SDL_Surface* Loading_Surf;
 	SDL_Texture* Brick_Tx;
+	SDL_Texture* Cobble_Tx;
+	SDL_Texture* Sky_Tx;
 };
 
