@@ -126,6 +126,18 @@ void Game::handleEvents(int map[xGrid][yGrid])
 			xPosPlayer = 0;
 		}
 	}
+	else if (keystate[SDL_SCANCODE_D])
+	{
+		bearing = bearing + RotationMultiplier;
+		if (bearing == 360)
+		{
+			bearing = 0;
+		}
+		if (xPosPlayer >= xResolution)
+		{
+			xPosPlayer = xResolution;
+		}
+	}
 	else if(keystate[SDL_SCANCODE_W])
 	{
 		xPosPlayer = xPosPlayer + sin(bearingRads) * distanceMultiplier;
@@ -170,18 +182,7 @@ void Game::handleEvents(int map[xGrid][yGrid])
 		posMemory[2] = yPosPlayer;
 		posMemory[3] = yPlayerView;
 	}
-	else if(keystate[SDL_SCANCODE_D])
-	{
-		bearing = bearing + RotationMultiplier;
-		if (bearing == 360)
-		{
-			bearing = 0;
-		}
-		if (xPosPlayer >= xResolution)
-		{
-			xPosPlayer = xResolution;
-		}
-	}
+	
 	bearingRads = bearing * (M_PI / 180);
 }
 
@@ -214,7 +215,7 @@ void Game::scan(int map[xGrid][yGrid])
 		rightBearing = rightBearing - 360;
 	}
 	int flag = 0;
-	double dist = 1;
+	double dist = 0.5;
 	
 	while (leftBearing != rightBearing)
 	{
@@ -228,30 +229,12 @@ void Game::scan(int map[xGrid][yGrid])
 			leftScanY = yPosPlayer - leftScanY;
 			if (collisionCheck(map, leftScanX, leftScanY) == true)
 			{
-
 				float temp = 0;
 				roundedX = round(leftScanX);
 				roundedY = round(leftScanY);
-				if (((int)roundedX % 40) == 0)
-				{
-					temp = leftScanY;
-					//line is on an X grid
-					while (temp > 0)
-					{
-						temp = temp - 40;
-					}
-					temp = fabs(temp);
-				}
-				else if (((int)roundedY % 40) == 0)
-				{
-					temp = leftScanX;
-					//line is on a Y grid
-					while (temp > 0)
-					{
-						temp = temp - 40;
-					}
-					temp = fabs(temp);
-				}
+
+				temp = ((int)roundedX % 40) + ((int)roundedY % 40);
+
 				texturePosition[viewPointCount] = temp;
 				scannedViewAngle[viewPointCount] = bearing - leftBearing;
 				scannedViewColour[viewPointCount] = colour;
@@ -266,7 +249,7 @@ void Game::scan(int map[xGrid][yGrid])
 				dist = dist + 0.5;
 			}
 		}
-		dist = 1;
+		dist = 0.5;
 		leftBearing = leftBearing + ScanRes;
 		if (leftBearing > 360)
 		{
@@ -323,44 +306,23 @@ void Game::view()
 		yBottom = yResolution / 2 - h / 2;
 		SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
 		double xStore = x;
-
-		
-
-		SDL_Rect wall = { x, yResolution - yTop, fabs(((xStore + xResolution) / (FOV / ScanRes))) , yTop - yBottom };
-		//SDL_RenderFillRect(rendererView, &wall);
-		//SDL_RenderCopy(rendererView, Brick_Tx, NULL, NULL);
-
-		//textureX++;
-
-		/*
-		if (textureX > 200)
-		{
-			textureX = 0;
-		}
-		*/
-		SDL_Rect wallex = { ((texturePosition[count]/40)*100), 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200  };
+		SDL_Rect wall = { x, yResolution - yTop, fabs(((xResolution) / (FOV / ScanRes))) , yTop - yBottom };
+		SDL_Rect wallex = { round((texturePosition[count]/40)*100), 0,fabs(((xResolution) / (FOV / ScanRes))), 200  };
 
 		if (scannedViewColour[count] == 1)
 		{
 			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
-			//SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
 		}
 		if (scannedViewColour[count] == 2)
 		{
-			
 			SDL_RenderCopy(rendererView, Brick_Tx, &wallex, &wall);
-			//SDL_SetRenderDrawColor(rendererView, 250, 250, 0, 255);
 		}
 		if (scannedViewColour[count] == 3)
 		{
 			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
-			//desiredTx = "Brick_Tx";
-			//SDL_SetRenderDrawColor(rendererView, 0, 250, 250, 255);
 		}
-		
-		//SDL_RenderPresent(rendererView);
 
-		SDL_Rect ceilingex = { ((texturePosition[count] / 40) * 100), 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200 };
+		SDL_Rect ceilingex = { round((texturePosition[count] / 40) * 100), 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200 };
 
 		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
 		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yTop};
@@ -374,11 +336,6 @@ void Game::view()
 		x = xStore + xResolution / (FOV/ScanRes);
 		count++;
 	}
-
-
-
-
-
 }
 
 void Game::render(int map[xGrid][yGrid], int xGridSize, int yGridSize)
