@@ -3,7 +3,7 @@
 #define xGrid 20
 #define yGrid 20
 #define xResolution 800
-#define yResolution 600
+#define yResolution 800
 #define radians (5*M_PI)/6
 #define FOV 80
 #define ScanRes 0.5 //1/0.1
@@ -22,6 +22,7 @@ Game::~Game()
 }
 
 int colour;
+float texturePosition[FOV * 2];
 float scannedViewAngle[FOV*2];
 char scannedViewColour[FOV*2];
 int scannedViewX[FOV*2];
@@ -31,7 +32,7 @@ int viewPointCount = 0;
 
 const int FRAMES_PER_SECOND = 60;
 int posMemory[5] = { 100, 100, 100, 80, 90 };
-int distanceMultiplier = 3;
+int distanceMultiplier = 2;
 double xPosPlayer = posMemory[0], yPosPlayer = posMemory[2], xPlayerView = posMemory[1], yPlayerView = posMemory[3], bearing = posMemory[4], r = 20;
 double bearingRads, reverseBearing, reverseBearingRads;
 bool interset, viewComplete;
@@ -200,6 +201,7 @@ void Game::update(int map[xGrid][yGrid])
 
 void Game::scan(int map[xGrid][yGrid])
 {
+	double roundedX, roundedY;
 	double leftBearingRads, leftBearing, rightBearing, leftScanX, leftScanY, rightScanX, rightScanY;
 	leftBearing = (bearing - FOV / 2);
 	if (leftBearing < 0)
@@ -226,6 +228,31 @@ void Game::scan(int map[xGrid][yGrid])
 			leftScanY = yPosPlayer - leftScanY;
 			if (collisionCheck(map, leftScanX, leftScanY) == true)
 			{
+
+				float temp = 0;
+				roundedX = round(leftScanX);
+				roundedY = round(leftScanY);
+				if (((int)roundedX % 40) == 0)
+				{
+					temp = leftScanY;
+					//line is on an X grid
+					while (temp > 0)
+					{
+						temp = temp - 40;
+					}
+					temp = fabs(temp);
+				}
+				else if (((int)roundedY % 40) == 0)
+				{
+					temp = leftScanX;
+					//line is on a Y grid
+					while (temp > 0)
+					{
+						temp = temp - 40;
+					}
+					temp = fabs(temp);
+				}
+				texturePosition[viewPointCount] = temp;
 				scannedViewAngle[viewPointCount] = bearing - leftBearing;
 				scannedViewColour[viewPointCount] = colour;
 				scannedViewX[viewPointCount] = leftScanX;
@@ -303,8 +330,7 @@ void Game::view()
 		//SDL_RenderFillRect(rendererView, &wall);
 		//SDL_RenderCopy(rendererView, Brick_Tx, NULL, NULL);
 
-		
-		textureX++;
+		//textureX++;
 
 		/*
 		if (textureX > 200)
@@ -312,7 +338,7 @@ void Game::view()
 			textureX = 0;
 		}
 		*/
-		SDL_Rect wallex = { x, 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200  };
+		SDL_Rect wallex = { ((texturePosition[count]/40)*100), 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200  };
 
 		if (scannedViewColour[count] == 1)
 		{
@@ -334,9 +360,11 @@ void Game::view()
 		
 		//SDL_RenderPresent(rendererView);
 
+		SDL_Rect ceilingex = { ((texturePosition[count] / 40) * 100), 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200 };
+
 		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
 		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yTop};
-		SDL_RenderCopy(rendererView, Sky_Tx, &ceiling, &ceiling);
+		SDL_RenderCopy(rendererView, Sky_Tx, &ceilingex, &ceiling);
 		//SDL_RenderFillRect(rendererView, &ceiling);
 			
 		SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
@@ -419,11 +447,11 @@ void Game::drawMap(int map[xGrid][yGrid], int xGridSize, int yGridSize)
 			{
 				//Origin has been set therefore we need to draw a rectangle from origin X, Y and cellMemory
 				if (originXPos == 0) { xPosReal = 0; }
-				else { xPosReal = ((originXPos + 1) * 800 / xGridSize) - (800 / yGridSize); }
+				else { xPosReal = ((originXPos + 1) * xResolution / xGridSize) - (xResolution / yGridSize); }
 				if (originYPos == 0) { yPosReal = 0; }
-				else { yPosReal = ((originYPos + 1) * 600 / yGridSize) - (600 / yGridSize); }
+				else { yPosReal = ((originYPos + 1) * yResolution / yGridSize) - (yResolution / yGridSize); }
 
-				SDL_Rect wall = { xPosReal, yPosReal, (800 / xGridSize)*(xPos - originXPos), 600 / yGridSize };
+				SDL_Rect wall = { xPosReal, yPosReal, (xResolution / xGridSize)*(xPos - originXPos), yResolution / yGridSize };
 				SDL_RenderDrawRect(rendererMap, &wall);
 				originXPos = 1000;
 			}
@@ -432,11 +460,11 @@ void Game::drawMap(int map[xGrid][yGrid], int xGridSize, int yGridSize)
 		if (xPos > xGridSize - 1) 
 		{
 			if (originXPos == 0) { xPosReal = 0; }
-			else { xPosReal = ((originXPos + 1) * 800 / xGridSize) - (800 / yGridSize); }
+			else { xPosReal = ((originXPos + 1) * xResolution / xGridSize) - (xResolution / yGridSize); }
 			if (originYPos == 0) { yPosReal = 0; }
-			else { yPosReal = ((originYPos + 1) * 600 / yGridSize) - (600 / yGridSize); }
+			else { yPosReal = ((originYPos + 1) * yResolution / yGridSize) - (yResolution / yGridSize); }
 			
-			SDL_Rect wall = { xPosReal, yPosReal, (800 / xGridSize) * (xPos), 600 / yGridSize };
+			SDL_Rect wall = { xPosReal, yPosReal, (xResolution / xGridSize) * (xPos), yResolution / yGridSize };
 			SDL_RenderDrawRect(rendererMap, &wall);
 			originXPos = 1000;
 			xPos = 0;

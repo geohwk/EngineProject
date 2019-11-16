@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
+#include <math.h>
 #define xGrid 20
 #define yGrid 20
 class Game
