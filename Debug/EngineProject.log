@@ -1,42 +1,42 @@
 ﻿  Game.cpp
-c:\sdl\engineproject\game.cpp(151): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(158): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(159): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(160): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(161): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(173): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(180): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(181): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(182): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(183): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(112): warning C4101: 'event': unreferenced local variable
-c:\sdl\engineproject\game.cpp(230): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(236): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\sdl\engineproject\game.cpp(239): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\sdl\engineproject\game.cpp(241): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(242): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(244): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(206): warning C4101: 'rightScanY': unreferenced local variable
-c:\sdl\engineproject\game.cpp(206): warning C4101: 'rightScanX': unreferenced local variable
-c:\sdl\engineproject\game.cpp(296): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(309): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-c:\sdl\engineproject\game.cpp(309): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(310): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
-c:\sdl\engineproject\game.cpp(310): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(310): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-c:\sdl\engineproject\game.cpp(310): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(325): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
-c:\sdl\engineproject\game.cpp(325): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(325): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-c:\sdl\engineproject\game.cpp(325): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(328): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-c:\sdl\engineproject\game.cpp(328): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(333): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
-c:\sdl\engineproject\game.cpp(333): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\sdl\engineproject\game.cpp(300): warning C4101: 'theta': unreferenced local variable
-c:\sdl\engineproject\game.cpp(300): warning C4101: 'm2': unreferenced local variable
-c:\sdl\engineproject\game.cpp(300): warning C4101: 'm1': unreferenced local variable
-c:\sdl\engineproject\game.cpp(367): warning C4101: 'yMapPos': unreferenced local variable
-c:\sdl\engineproject\game.cpp(367): warning C4101: 'xMapPos': unreferenced local variable
-c:\sdl\engineproject\game.cpp(288): warning C4715: 'Game::collisionCheck': not all control paths return a value
+c:\sdl\engineproject\game.cpp(160): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(167): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(168): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(169): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(170): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(182): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(189): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(190): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(191): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(192): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(121): warning C4101: 'event': unreferenced local variable
+c:\sdl\engineproject\game.cpp(240): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(246): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\sdl\engineproject\game.cpp(259): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\sdl\engineproject\game.cpp(261): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(262): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(264): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(215): warning C4101: 'rightScanY': unreferenced local variable
+c:\sdl\engineproject\game.cpp(215): warning C4101: 'rightScanX': unreferenced local variable
+c:\sdl\engineproject\game.cpp(316): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(329): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+c:\sdl\engineproject\game.cpp(329): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(330): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\sdl\engineproject\game.cpp(330): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(330): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+c:\sdl\engineproject\game.cpp(330): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(355): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+c:\sdl\engineproject\game.cpp(355): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(355): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+c:\sdl\engineproject\game.cpp(355): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(358): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+c:\sdl\engineproject\game.cpp(358): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(363): warning C4838: conversion from 'double' to 'int' requires a narrowing conversion
+c:\sdl\engineproject\game.cpp(363): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\sdl\engineproject\game.cpp(320): warning C4101: 'theta': unreferenced local variable
+c:\sdl\engineproject\game.cpp(320): warning C4101: 'm2': unreferenced local variable
+c:\sdl\engineproject\game.cpp(320): warning C4101: 'm1': unreferenced local variable
+c:\sdl\engineproject\game.cpp(399): warning C4101: 'yMapPos': unreferenced local variable
+c:\sdl\engineproject\game.cpp(399): warning C4101: 'xMapPos': unreferenced local variable
+c:\sdl\engineproject\game.cpp(308): warning C4715: 'Game::collisionCheck': not all control paths return a value
   EngineProject.vcxproj -> C:\SDL\EngineProject\Debug\EngineProject.exe

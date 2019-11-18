@@ -22,6 +22,7 @@ Game::~Game()
 }
 
 int colour;
+int wallSide[FOV * 2];
 float texturePosition[FOV * 2];
 float scannedViewAngle[FOV*2];
 char scannedViewColour[FOV*2];
@@ -80,14 +81,16 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 
 
-	Loading_Surf = SDL_LoadBMP("bricks.bmp");
+	Loading_Surf = SDL_LoadBMP("brickTexture.bmp");
 	if (Loading_Surf == NULL)
 	{
 		cout << "Unable to load image" << endl;
 	}
-	Brick_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+	Brick_Tx1 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+	Brick_Tx0 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+	SDL_SetTextureColorMod(Brick_Tx0, 100, 100, 100);
 
-	Loading_Surf = SDL_LoadBMP("cobble.bmp");
+	Loading_Surf = SDL_LoadBMP("cobbleTexture.bmp");
 	if (Loading_Surf == NULL)
 	{
 		cout << "Unable to load image" << endl;
@@ -101,6 +104,12 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 	Sky_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
 
+	Loading_Surf = SDL_LoadBMP("gun.bmp");
+	if (Loading_Surf == NULL)
+	{
+		cout << "Unable to load image" << endl;
+	}
+	Gun_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
 
 	SDL_FreeSurface(Loading_Surf);
 
@@ -204,6 +213,7 @@ void Game::scan(int map[xGrid][yGrid])
 {
 	double roundedX, roundedY;
 	double leftBearingRads, leftBearing, rightBearing, leftScanX, leftScanY, rightScanX, rightScanY;
+	int side;
 	leftBearing = (bearing - FOV / 2);
 	if (leftBearing < 0)
 	{
@@ -235,6 +245,16 @@ void Game::scan(int map[xGrid][yGrid])
 
 				temp = ((int)roundedX % 40) + ((int)roundedY % 40);
 
+				if ((int)roundedX % 40 == 0)
+				{
+					side = 0;
+				}
+				else
+				{
+					side = 1;
+				}
+
+				wallSide[viewPointCount] = side;
 				texturePosition[viewPointCount] = temp;
 				scannedViewAngle[viewPointCount] = bearing - leftBearing;
 				scannedViewColour[viewPointCount] = colour;
@@ -309,13 +329,23 @@ void Game::view()
 		SDL_Rect wall = { x, yResolution - yTop, fabs(((xResolution) / (FOV / ScanRes))) , yTop - yBottom };
 		SDL_Rect wallex = { round((texturePosition[count]/40)*100), 0,fabs(((xResolution) / (FOV / ScanRes))), 200  };
 
+		
+
 		if (scannedViewColour[count] == 1)
 		{
 			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
 		}
 		if (scannedViewColour[count] == 2)
 		{
-			SDL_RenderCopy(rendererView, Brick_Tx, &wallex, &wall);
+			if (wallSide[count] == 1)
+			{
+				SDL_RenderCopy(rendererView, Brick_Tx1, &wallex, &wall);
+			}
+			else
+			{
+				SDL_RenderCopy(rendererView, Brick_Tx0, &wallex, &wall);
+			}
+			
 		}
 		if (scannedViewColour[count] == 3)
 		{
@@ -336,6 +366,8 @@ void Game::view()
 		x = xStore + xResolution / (FOV/ScanRes);
 		count++;
 	}
+	//SDL_Rect Gun = { 430, 590, 370, 210 };
+	//SDL_RenderCopy(rendererView, Gun_Tx, &Gun, &Gun);
 }
 
 void Game::render(int map[xGrid][yGrid], int xGridSize, int yGridSize)
