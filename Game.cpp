@@ -9,6 +9,7 @@
 #define ScanRes 0.5 //1/0.1
 #define WallHeight 25
 #define RotationMultiplier 1
+#define textureDim 180
 
 using namespace std;
 
@@ -50,7 +51,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
 		std::cout << "SDL initialization succeeded!" << std::endl;
-		viewWindow = SDL_CreateWindow("Perspective View", xpos, ypos, width, height, flags);
+		viewWindow = SDL_CreateWindow("Perspective View", 0, 0, width, height, flags);
 		if (viewWindow)
 		{
 			std::cout << "Perspective view created!" << std::endl;
@@ -88,7 +89,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 	Brick_Tx1 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
 	Brick_Tx0 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
-	SDL_SetTextureColorMod(Brick_Tx0, 100, 100, 100);
+	SDL_SetTextureColorMod(Brick_Tx0, textureDim, textureDim, textureDim);
 
 	Loading_Surf = SDL_LoadBMP("cobbleTexture.bmp");
 	if (Loading_Surf == NULL)
@@ -242,15 +243,17 @@ void Game::scan(int map[xGrid][yGrid])
 				float temp = 0;
 				roundedX = round(leftScanX);
 				roundedY = round(leftScanY);
+				
 
-				temp = ((int)roundedX % 40) + ((int)roundedY % 40);
 
 				if ((int)roundedX % 40 == 0)
 				{
+					temp = fmod(leftScanY, 40);
 					side = 0;
 				}
 				else
 				{
+					temp = (fmod(leftScanX, 40));
 					side = 1;
 				}
 
@@ -316,8 +319,11 @@ void Game::view()
 	SDL_RenderDrawLine(rendererMap, xPosPlayer, yPosPlayer, xPlayerView, yPlayerView);
 	int textureX = 0;
 	int count = 0;
+	int storedX = 0;
 	string desiredTx;
 	double d, h, yTop, yBottom, x = 0, theta, m1, m2;
+	double xStore;
+	int width;
 	while (count < (FOV*2))
 	{
 		d = cos(scannedViewAngle[count] * (M_PI / 180))*sqrt(pow((xPosPlayer - scannedViewX[count]), 2) + pow((yPosPlayer - scannedViewY[count]), 2));
@@ -325,9 +331,15 @@ void Game::view()
 		yTop = yResolution / 2 + h / 2;
 		yBottom = yResolution / 2 - h / 2;
 		SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
-		double xStore = x;
-		SDL_Rect wall = { x, yResolution - yTop, fabs(((xResolution) / (FOV / ScanRes))) , yTop - yBottom };
-		SDL_Rect wallex = { round((texturePosition[count]/40)*100), 0,fabs(((xResolution) / (FOV / ScanRes))), 200  };
+		xStore = x;
+		
+		width = fabs((((texturePosition[count + 1] - texturePosition[count])/40 * 100)));
+		if (width == 0)
+		{
+			width = 1;
+		}
+		SDL_Rect wall = { x, yResolution - yTop, xResolution / (FOV / ScanRes) , yTop - yBottom };
+		SDL_Rect wallex = { (texturePosition[count]/40)*100, 0,width, 200  };
 
 		
 
@@ -343,17 +355,18 @@ void Game::view()
 			}
 			else
 			{
-				SDL_RenderCopy(rendererView, Brick_Tx0, &wallex, &wall);
+ 				SDL_RenderCopy(rendererView, Brick_Tx0, &wallex, &wall);
 			}
 			
 		}
+		//SDL_RenderPresent(rendererView);
 		if (scannedViewColour[count] == 3)
 		{
 			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
 		}
 
-		SDL_Rect ceilingex = { round((texturePosition[count] / 40) * 100), 0,fabs(((xStore + xResolution) / (FOV / ScanRes))), 200 };
-
+		SDL_Rect ceilingex = { (texturePosition[count] / 40) * 100, 0,width, 200 };
+		//SDL_RenderPresent(rendererView);
 		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
 		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yTop};
 		SDL_RenderCopy(rendererView, Sky_Tx, &ceilingex, &ceiling);
@@ -362,7 +375,7 @@ void Game::view()
 		SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
 		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yBottom};
 		SDL_RenderFillRect(rendererView, &floor);
-
+		storedX = x;
 		x = xStore + xResolution / (FOV/ScanRes);
 		count++;
 	}
