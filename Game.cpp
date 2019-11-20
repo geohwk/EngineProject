@@ -245,15 +245,27 @@ void Game::scan(int map[xGrid][yGrid])
 				roundedY = round(leftScanY);
 				
 
-
-				if ((int)roundedX % 40 == 0)
+				if ((int)roundedX % 40 == 0) //Side is facing sideways (along X axis)
 				{
-					temp = fmod(leftScanY, 40);
+					if (leftBearing < 360 && leftBearing >= 180)
+					{
+						temp = 40 - fmod(leftScanY, 40); //right facing
+					}
+					else {
+						temp = fmod(leftScanY, 40); //left facing
+					}
 					side = 0;
 				}
-				else
+				else //Side is facing up (along Y axis)
 				{
-					temp = (fmod(leftScanX, 40));
+					if (leftBearing <= 270 && leftBearing >= 90)
+					{
+						temp = 40 - fmod(leftScanX, 40); //Down facing
+					}
+					else {
+						temp = (fmod(leftScanX, 40)); //Up facing
+						
+					}
 					side = 1;
 				}
 
@@ -359,14 +371,14 @@ void Game::view()
 			}
 			
 		}
-		//SDL_RenderPresent(rendererView);
+		
 		if (scannedViewColour[count] == 3)
 		{
 			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
 		}
 
 		SDL_Rect ceilingex = { (texturePosition[count] / 40) * 100, 0,width, 200 };
-		//SDL_RenderPresent(rendererView);
+		
 		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
 		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yTop};
 		SDL_RenderCopy(rendererView, Sky_Tx, &ceilingex, &ceiling);
