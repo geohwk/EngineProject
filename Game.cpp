@@ -67,6 +67,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 		{
 			std::cout << "View Renderer created!" << std::endl;
 		}
+		SDL_SetRenderDrawBlendMode(rendererView, SDL_BLENDMODE_BLEND);
 
 		rendererMap = SDL_CreateRenderer(mapWindow, -1, 0);
 		if (rendererMap)
@@ -83,6 +84,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
 
 	Loading_Surf = SDL_LoadBMP("brickTexture.bmp");
+	
 	if (Loading_Surf == NULL)
 	{
 		cout << "Unable to load image" << endl;
@@ -391,8 +393,8 @@ void Game::view()
 		x = xStore + xResolution / (FOV/ScanRes);
 		count++;
 	}
-	//SDL_Rect Gun = { 430, 590, 370, 210 };
-	//SDL_RenderCopy(rendererView, Gun_Tx, &Gun, &Gun);
+	SDL_Rect Gun = { 0, 0, 800, 800 };
+	SDL_RenderCopy(rendererView, Gun_Tx, &Gun, &Gun);
 }
 
 void Game::render(int map[xGrid][yGrid], int xGridSize, int yGridSize)
@@ -486,3 +488,14 @@ void Game::drawMap(int map[xGrid][yGrid], int xGridSize, int yGridSize)
 		}
 	}
 }
+
+class PlayerHand
+{
+public:
+
+	void renderImplement()
+	{
+
+	}
+
+};

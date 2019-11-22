@@ -36,12 +36,12 @@ int main(int argc, char * argv[])
 
 	//The frame rate regulator
 	
-
+	
 
 	game = new Game();
-
+	
 	game->init("Map View", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xResolution,yResolution, false);
-
+	
 	while(game->running())
 	{
 		game->handleEvents(map);
