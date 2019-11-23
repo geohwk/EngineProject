@@ -36,7 +36,11 @@ int main(int argc, char * argv[])
 
 	//The frame rate regulator
 	
-	
+	const int FPS = 60;
+	const int frameDelay = 1000 / FPS;
+
+	Uint32 frameStart;
+	int frameTime;
 
 	game = new Game();
 	
@@ -44,9 +48,18 @@ int main(int argc, char * argv[])
 	
 	while(game->running())
 	{
+		frameStart = SDL_GetTicks();
+
 		game->handleEvents(map);
 		game->update(map);
 		game->render(map, xGridSize, yGridSize);
+
+		frameTime = SDL_GetTicks() - frameStart;
+
+		if (frameDelay > frameTime)
+		{
+			SDL_Delay(frameDelay - frameTime);
+		}
 	};
 
 	game->clean();

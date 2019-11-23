@@ -8,7 +8,7 @@
 #define FOV 80
 #define ScanRes 0.5 //1/0.1
 #define WallHeight 25
-#define RotationMultiplier 1
+#define RotationMultiplier 2
 #define textureDim 180
 
 using namespace std;
@@ -34,7 +34,7 @@ int viewPointCount = 0;
 
 const int FRAMES_PER_SECOND = 60;
 int posMemory[5] = { 100, 100, 100, 80, 90 };
-int distanceMultiplier = 2;
+int distanceMultiplier = 3;
 double xPosPlayer = posMemory[0], yPosPlayer = posMemory[2], xPlayerView = posMemory[1], yPlayerView = posMemory[3], bearing = posMemory[4], r = 20;
 double bearingRads, reverseBearing, reverseBearingRads;
 bool interset, viewComplete;
@@ -228,7 +228,7 @@ void Game::scan(int map[xGrid][yGrid])
 		rightBearing = rightBearing - 360;
 	}
 	int flag = 0;
-	double dist = 0.5;
+	double dist = 0.4;
 	
 	while (leftBearing != rightBearing)
 	{
@@ -283,10 +283,10 @@ void Game::scan(int map[xGrid][yGrid])
 			}
 			else
 			{
-				dist = dist + 0.5;
+				dist = dist + 0.4;
 			}
 		}
-		dist = 0.5;
+		dist = 0.4;
 		leftBearing = leftBearing + ScanRes;
 		if (leftBearing > 360)
 		{
