@@ -5,11 +5,12 @@
 #define xResolution 800
 #define yResolution 800
 #define radians (5*M_PI)/6
-#define FOV 80
+#define FOV 90
 #define ScanRes 0.5 //1/0.1
-#define WallHeight 25
+#define WallHeight 20
 #define RotationMultiplier 2
 #define textureDim 180
+#define planeDistance 50
 
 using namespace std;
 
@@ -22,13 +23,18 @@ Game::~Game()
 {
 }
 
+const double fovRads = FOV * (M_PI / 180);
+const int perspectivePlane = 100;
+
+
+
 int colour;
-int wallSide[FOV * 2];
-float texturePosition[FOV * 2];
-float scannedViewAngle[FOV*2];
-char scannedViewColour[FOV*2];
-int scannedViewX[FOV*2];
-int scannedViewY[FOV*2];
+int wallSide[200];
+float texturePosition[200];
+float scannedViewAngle[200];
+char scannedViewColour[200];
+float scannedViewX[200];
+float scannedViewY[200]; //make these based on perspective plane size (perspectivePlane/0.5)
 int viewPointCount = 0;
 
 
@@ -51,7 +57,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
 		std::cout << "SDL initialization succeeded!" << std::endl;
-		viewWindow = SDL_CreateWindow("Perspective View", 0, 0, width, height, flags);
+		viewWindow = SDL_CreateWindow("Perspective View", 50, 50, width, height, flags);
 		if (viewWindow)
 		{
 			std::cout << "Perspective view created!" << std::endl;
@@ -83,7 +89,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 
 
-	Loading_Surf = SDL_LoadBMP("brickTexture.bmp");
+	Loading_Surf = SDL_LoadBMP("bricks.bmp");
 	
 	if (Loading_Surf == NULL)
 	{
@@ -229,11 +235,16 @@ void Game::scan(int map[xGrid][yGrid])
 	}
 	int flag = 0;
 	double dist = 0.4;
+	double planePosition = perspectivePlane / 2;
+	double perspectiveBearingRads = atan((planePosition) / planeDistance);
+	double perspectiveBearing = 0;
 	
-	while (leftBearing != rightBearing)
+	leftBearingRads = leftBearing * (M_PI / 180);
+	while (perspectiveBearing > -45)
 	{
+		
 		flag = 0;
-		leftBearingRads = leftBearing * (M_PI / 180);
+		//leftBearingRads = leftBearing * (M_PI / 180);
 		while (flag == 0)
 		{
 			leftScanX = sin(leftBearingRads) * dist;
@@ -262,7 +273,7 @@ void Game::scan(int map[xGrid][yGrid])
 				{
 					if (leftBearing <= 270 && leftBearing >= 90)
 					{
-						temp = 40 - fmod(leftScanX, 40); //Down facing
+					temp = 40 - fmod(leftScanX, 40); //Down facing
 					}
 					else {
 						temp = (fmod(leftScanX, 40)); //Up facing
@@ -279,6 +290,7 @@ void Game::scan(int map[xGrid][yGrid])
 				scannedViewY[viewPointCount] = leftScanY;
 				viewPointCount++;
 				SDL_RenderDrawLine(rendererMap, xPosPlayer, yPosPlayer, leftScanX, leftScanY);
+				
 				flag = 1;
 			}
 			else
@@ -287,10 +299,21 @@ void Game::scan(int map[xGrid][yGrid])
 			}
 		}
 		dist = 0.4;
-		leftBearing = leftBearing + ScanRes;
-		if (leftBearing > 360)
+		planePosition = planePosition - 0.5;
+		perspectiveBearingRads = atan((planePosition) / planeDistance);
+		leftBearingRads = bearingRads - perspectiveBearingRads;
+		//leftBearing = leftBearing + ScanRes;
+		perspectiveBearing = perspectiveBearingRads * (180 / M_PI);
+		leftBearing = leftBearingRads * (180 / M_PI);
+		if (leftBearing >= 360)
 		{
-			leftBearing = ScanRes;
+			leftBearing = leftBearing - 360;
+			leftBearingRads = leftBearing * (M_PI / 180);
+		}
+		if (leftBearing < 0)
+		{
+			leftBearing = 360 + leftBearing;
+			leftBearingRads = leftBearing * (M_PI / 180);
 		}
 	}
 	viewPointCount = 0;
@@ -338,7 +361,7 @@ void Game::view()
 	double d, h, yTop, yBottom, x = 0, theta, m1, m2;
 	double xStore;
 	int width;
-	while (count < (FOV*2))
+	while (count < (perspectivePlane/ScanRes))
 	{
 		d = cos(scannedViewAngle[count] * (M_PI / 180))*sqrt(pow((xPosPlayer - scannedViewX[count]), 2) + pow((yPosPlayer - scannedViewY[count]), 2));
 		h = yResolution / d * WallHeight;
@@ -352,7 +375,7 @@ void Game::view()
 		{
 			width = 1;
 		}
-		SDL_Rect wall = { x, yResolution - yTop, xResolution / (FOV / ScanRes) , yTop - yBottom };
+		SDL_Rect wall = { x, yResolution - yTop, xResolution / (perspectivePlane / ScanRes) , yTop - yBottom };
 		SDL_Rect wallex = { (texturePosition[count]/40)*100, 0,width, 200  };
 
 		
@@ -382,16 +405,17 @@ void Game::view()
 		SDL_Rect ceilingex = { (texturePosition[count] / 40) * 100, 0,width, 200 };
 		
 		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
-		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yTop};
+		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (perspectivePlane / ScanRes))), yResolution - yTop};
 		SDL_RenderCopy(rendererView, Sky_Tx, &ceilingex, &ceiling);
 		//SDL_RenderFillRect(rendererView, &ceiling);
 			
 		SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
-		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolution) / (FOV / ScanRes))), yResolution - yBottom};
+		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolution) / (perspectivePlane / ScanRes))), yResolution - yBottom};
 		SDL_RenderFillRect(rendererView, &floor);
 		storedX = x;
-		x = xStore + xResolution / (FOV/ScanRes);
+		x = xStore + xResolution / (perspectivePlane/ScanRes);
 		count++;
+		//SDL_RenderPresent(rendererView);
 	}
 	SDL_Rect Gun = { 0, 0, 800, 800 };
 	SDL_RenderCopy(rendererView, Gun_Tx, &Gun, &Gun);
