@@ -11,6 +11,7 @@
 #define RotationMultiplier 2
 #define textureDim 180
 #define planeDistance 50
+#define ScanInc 0.4
 
 using namespace std;
 
@@ -23,27 +24,26 @@ Game::~Game()
 {
 }
 
-const double fovRads = FOV * (M_PI / 180);
-const int perspectivePlane = 100;
 
+const int perspectivePlane = 100;
+constexpr int perspectiveWidth = perspectivePlane / ScanRes;
 
 
 int colour;
-int wallSide[200];
-float texturePosition[200];
-float scannedViewAngle[200];
-char scannedViewColour[200];
-float scannedViewX[200];
-float scannedViewY[200]; //make these based on perspective plane size (perspectivePlane/0.5)
+
+int wallSide[perspectiveWidth];
+float texturePosition[perspectiveWidth];
+float scannedViewAngle[perspectiveWidth];
+char scannedViewColour[perspectiveWidth];
+float scannedViewX[perspectiveWidth];
+float scannedViewY[perspectiveWidth]; //make these based on perspective plane size (perspectivePlane/0.5)
+
 int viewPointCount = 0;
 
-
-const int FRAMES_PER_SECOND = 60;
 int posMemory[5] = { 100, 100, 100, 80, 90 };
 int distanceMultiplier = 3;
 double xPosPlayer = posMemory[0], yPosPlayer = posMemory[2], xPlayerView = posMemory[1], yPlayerView = posMemory[3], bearing = posMemory[4], r = 20;
-double bearingRads, reverseBearing, reverseBearingRads;
-bool interset, viewComplete;
+double bearingRads;
 
 
 void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen)
@@ -89,7 +89,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 
 
-	Loading_Surf = SDL_LoadBMP("bricks.bmp");
+	Loading_Surf = SDL_LoadBMP("brickTexture.bmp");
 	
 	if (Loading_Surf == NULL)
 	{
@@ -295,11 +295,11 @@ void Game::scan(int map[xGrid][yGrid])
 			}
 			else
 			{
-				dist = dist + 0.4;
+				dist = dist + ScanInc;
 			}
 		}
-		dist = 0.4;
-		planePosition = planePosition - 0.5;
+		dist = ScanInc;
+		planePosition = planePosition - ScanRes;
 		perspectiveBearingRads = atan((planePosition) / planeDistance);
 		leftBearingRads = bearingRads - perspectiveBearingRads;
 		//leftBearing = leftBearing + ScanRes;
@@ -353,8 +353,8 @@ void Game::view()
 	yPlayerView = cos(bearingRads)*r;
 	xPlayerView = xPosPlayer + xPlayerView;
 	yPlayerView = yPosPlayer - yPlayerView;
+
 	SDL_RenderDrawLine(rendererMap, xPosPlayer, yPosPlayer, xPlayerView, yPlayerView);
-	int textureX = 0;
 	int count = 0;
 	int storedX = 0;
 	string desiredTx;

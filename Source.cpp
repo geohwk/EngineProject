@@ -39,7 +39,7 @@ int main(int argc, char * argv[])
 
 	//The frame rate regulator
 	
-	const int FPS = 60;
+	const int FPS = 100;
 	const int frameDelay = 1000 / FPS;
 
 	Uint32 frameStart;
