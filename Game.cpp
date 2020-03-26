@@ -4,14 +4,16 @@
 #define yGrid 20
 #define xResolution 800
 #define yResolution 800
+#define xResolutionScreen 1200
+#define yResolutionScreen 800
 #define radians (5*M_PI)/6
 #define FOV 90
 #define ScanRes 0.5 //1/0.1
 #define WallHeight 20
-#define RotationMultiplier 2
+#define RotationMultiplier 4
 #define textureDim 180
 #define planeDistance 50
-#define ScanInc 0.4
+#define ScanInc 0.5
 
 using namespace std;
 
@@ -28,9 +30,9 @@ Game::~Game()
 const int perspectivePlane = 100;
 constexpr int perspectiveWidth = perspectivePlane / ScanRes;
 
-
+int shoot = 0;
 int colour;
-
+int gunHeight = 10, up = 0;
 int wallSide[perspectiveWidth];
 float texturePosition[perspectiveWidth];
 float scannedViewAngle[perspectiveWidth];
@@ -57,7 +59,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
 		std::cout << "SDL initialization succeeded!" << std::endl;
-		viewWindow = SDL_CreateWindow("Perspective View", 50, 50, width, height, flags);
+		viewWindow = SDL_CreateWindow("Perspective View", 50, 50, xResolutionScreen, yResolutionScreen, flags);
 		if (viewWindow)
 		{
 			std::cout << "Perspective view created!" << std::endl;
@@ -95,8 +97,8 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	{
 		cout << "Unable to load image" << endl;
 	}
-	Brick_Tx1 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
-	Brick_Tx0 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+	Brick_Tx1 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);//default texture
+	Brick_Tx0 = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);//dimmed texture
 	SDL_SetTextureColorMod(Brick_Tx0, textureDim, textureDim, textureDim);
 
 	Loading_Surf = SDL_LoadBMP("cobbleTexture.bmp");
@@ -120,6 +122,19 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 	Gun_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
 
+	Loading_Surf = SDL_LoadBMP("gunShot.bmp");
+	if (Loading_Surf == NULL)
+	{
+		cout << "Unable to load image" << endl;
+	}
+	GunEx_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
+	
+	Loading_Surf = SDL_LoadBMP("jessface.bmp");
+	if (Loading_Surf == NULL)
+	{
+		cout << "Unable to load image" << endl;
+	}
+	Enemy_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
 	SDL_FreeSurface(Loading_Surf);
 
 }
@@ -132,7 +147,21 @@ void Game::handleEvents(int map[xGrid][yGrid])
 	string currentKey;
 	const Uint8* keystate = SDL_GetKeyboardState(NULL);
 	SDL_PumpEvents();
-	if (keystate[SDL_SCANCODE_A])
+	shoot = 0;
+	if (keystate[SDL_SCANCODE_SPACE])
+	{
+		int randomNum = rand() % 100;
+		if (randomNum > 80)
+		{
+			shoot = 0;
+		}
+		else
+		{
+			shoot = 1;
+		}
+		
+	}
+	if (keystate[SDL_SCANCODE_LEFT])
 	{
 		bearing = bearing - RotationMultiplier;
 		if (bearing == (0 - RotationMultiplier))
@@ -143,8 +172,9 @@ void Game::handleEvents(int map[xGrid][yGrid])
 		{
 			xPosPlayer = 0;
 		}
+
 	}
-	else if (keystate[SDL_SCANCODE_D])
+	if (keystate[SDL_SCANCODE_RIGHT])
 	{
 		bearing = bearing + RotationMultiplier;
 		if (bearing == 360)
@@ -156,7 +186,78 @@ void Game::handleEvents(int map[xGrid][yGrid])
 			xPosPlayer = xResolution;
 		}
 	}
-	else if(keystate[SDL_SCANCODE_W])
+	if (keystate[SDL_SCANCODE_A])
+	{
+		float sideBearing = bearingRads - (float)M_PI / 2;
+		if (sideBearing < 0)sideBearing = 2 * M_PI + sideBearing;
+		xPosPlayer = xPosPlayer + sin(sideBearing) * distanceMultiplier;
+		yPosPlayer = yPosPlayer - cos(sideBearing) * distanceMultiplier;
+		xPlayerView = xPlayerView + sin(sideBearing) * distanceMultiplier;
+		yPlayerView = yPlayerView - cos(sideBearing) * distanceMultiplier;
+
+		if (yPosPlayer <= 0)
+		{
+			yPosPlayer = 0;
+		}
+
+		if (collisionCheck(map, xPosPlayer, yPosPlayer) == true)
+		{
+			xPosPlayer = posMemory[0];
+			xPlayerView = posMemory[1];
+			yPosPlayer = posMemory[2];
+			yPlayerView = posMemory[3];
+		}
+		posMemory[0] = xPosPlayer;
+		posMemory[1] = xPlayerView;
+		posMemory[2] = yPosPlayer;
+		posMemory[3] = yPlayerView;
+	}
+	if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_S])
+	{
+		if (up == 0)
+		{
+			gunHeight = gunHeight + 10;
+			if (gunHeight >= 100)
+			{
+				up = 1;
+			}
+		}
+		if (up == 1)
+		{
+			gunHeight = gunHeight - 10;
+			if (gunHeight <= 0)
+			{
+				up = 0;
+			}
+		}
+	}
+	if (keystate[SDL_SCANCODE_D])
+	{
+		float sideBearing = bearingRads + (float)M_PI / 2;
+		if (sideBearing > 360)sideBearing = sideBearing - 360;
+		xPosPlayer = xPosPlayer + sin(sideBearing) * distanceMultiplier;
+		yPosPlayer = yPosPlayer - cos(sideBearing) * distanceMultiplier;
+		xPlayerView = xPlayerView + sin(sideBearing) * distanceMultiplier;
+		yPlayerView = yPlayerView - cos(sideBearing) * distanceMultiplier;
+
+		if (yPosPlayer <= 0)
+		{
+			yPosPlayer = 0;
+		}
+
+		if (collisionCheck(map, xPosPlayer, yPosPlayer) == true)
+		{
+			xPosPlayer = posMemory[0];
+			xPlayerView = posMemory[1];
+			yPosPlayer = posMemory[2];
+			yPlayerView = posMemory[3];
+		}
+		posMemory[0] = xPosPlayer;
+		posMemory[1] = xPlayerView;
+		posMemory[2] = yPosPlayer;
+		posMemory[3] = yPlayerView;
+	}
+	if(keystate[SDL_SCANCODE_W])
 	{
 		xPosPlayer = xPosPlayer + sin(bearingRads) * distanceMultiplier;
 		yPosPlayer = yPosPlayer - cos(bearingRads) * distanceMultiplier;
@@ -178,7 +279,7 @@ void Game::handleEvents(int map[xGrid][yGrid])
 		posMemory[2] = yPosPlayer;
 		posMemory[3] = yPlayerView;
 	}
-	else if(keystate[SDL_SCANCODE_S])
+	if(keystate[SDL_SCANCODE_S])
 	{
 		xPosPlayer = xPosPlayer - sin(bearingRads) * distanceMultiplier;
 		yPosPlayer = yPosPlayer + cos(bearingRads) * distanceMultiplier;
@@ -234,7 +335,7 @@ void Game::scan(int map[xGrid][yGrid])
 		rightBearing = rightBearing - 360;
 	}
 	int flag = 0;
-	double dist = 0.4;
+	double dist = ScanInc;
 	double planePosition = perspectivePlane / 2;
 	double perspectiveBearingRads = atan((planePosition) / planeDistance);
 	double perspectiveBearing = 0;
@@ -257,8 +358,8 @@ void Game::scan(int map[xGrid][yGrid])
 				roundedX = round(leftScanX);
 				roundedY = round(leftScanY);
 				
-
-				if ((int)roundedX % 40 == 0) //Side is facing sideways (along X axis)
+//TODO: Work out how to determine when section of texture is on the gridpoint
+				if ((int)roundedX % 40 == 0) //Side is facing sideways (along X axis) 
 				{
 					if (leftBearing < 360 && leftBearing >= 180)
 					{
@@ -280,6 +381,10 @@ void Game::scan(int map[xGrid][yGrid])
 						
 					}
 					side = 1;
+				}
+
+				if (((int)roundedX % 40 == 0) && ((int)roundedY % 40 == 0)) {
+					side = wallSide[viewPointCount - 1];
 				}
 
 				wallSide[viewPointCount] = side;
@@ -321,7 +426,7 @@ void Game::scan(int map[xGrid][yGrid])
 
 bool Game::collisionCheck(int map[xGrid][yGrid], int xPosPlayer, int yPosPlayer)
 {
-	int recWidth = xResolution / xGrid, recHeight = yResolution / yGrid;
+	int recWidth = xResolutionScreen / xGrid, recHeight = yResolutionScreen / yGrid;
 	int cellSizeX, cellSizeY;
 	int arrayCellX, arrayCellY;
 	//Take current xPos/yPos and work out position on map.
@@ -345,6 +450,11 @@ bool Game::collisionCheck(int map[xGrid][yGrid], int xPosPlayer, int yPosPlayer)
 		colour = 3;
 		return true;
 	}
+	if (map[arrayCellY][arrayCellX] == 4) //Point is in entity collision block
+	{
+		colour = 4;
+		return true;
+	}
 }
 
 void Game::view()
@@ -364,9 +474,9 @@ void Game::view()
 	while (count < (perspectivePlane/ScanRes))
 	{
 		d = cos(scannedViewAngle[count] * (M_PI / 180))*sqrt(pow((xPosPlayer - scannedViewX[count]), 2) + pow((yPosPlayer - scannedViewY[count]), 2));
-		h = yResolution / d * WallHeight;
-		yTop = yResolution / 2 + h / 2;
-		yBottom = yResolution / 2 - h / 2;
+		h = yResolutionScreen / d * WallHeight;
+		yTop = yResolutionScreen / 2 + h / 2;
+		yBottom = yResolutionScreen / 2 - h / 2;
 		SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
 		xStore = x;
 		
@@ -375,7 +485,7 @@ void Game::view()
 		{
 			width = 1;
 		}
-		SDL_Rect wall = { x, yResolution - yTop, xResolution / (perspectivePlane / ScanRes) , yTop - yBottom };
+		SDL_Rect wall = { x, yResolutionScreen - yTop, xResolutionScreen / (perspectivePlane / ScanRes) , yTop - yBottom };
 		SDL_Rect wallex = { (texturePosition[count]/40)*100, 0,width, 200  };
 
 		
@@ -388,11 +498,11 @@ void Game::view()
 		{
 			if (wallSide[count] == 1)
 			{
-				SDL_RenderCopy(rendererView, Brick_Tx1, &wallex, &wall);
+				SDL_RenderCopy(rendererView, Brick_Tx1, &wallex, &wall); //Default Texture
 			}
 			else
 			{
- 				SDL_RenderCopy(rendererView, Brick_Tx0, &wallex, &wall);
+ 				SDL_RenderCopy(rendererView, Brick_Tx0, &wallex, &wall); //Dimmed Texture
 			}
 			
 		}
@@ -402,23 +512,37 @@ void Game::view()
 			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
 		}
 
+		if (scannedViewColour[count] == 4)
+		{
+			SDL_RenderCopy(rendererView, Enemy_Tx, &wallex, &wall);
+		}
+
 		SDL_Rect ceilingex = { (texturePosition[count] / 40) * 100, 0,width, 200 };
 		
 		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
-		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolution) / (perspectivePlane / ScanRes))), yResolution - yTop};
+		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolutionScreen) / (perspectivePlane / ScanRes))), yResolutionScreen - yTop};
 		SDL_RenderCopy(rendererView, Sky_Tx, &ceilingex, &ceiling);
 		//SDL_RenderFillRect(rendererView, &ceiling);
 			
 		SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
-		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolution) / (perspectivePlane / ScanRes))), yResolution - yBottom};
+		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolutionScreen) / (perspectivePlane / ScanRes))), yResolutionScreen - yBottom};
 		SDL_RenderFillRect(rendererView, &floor);
 		storedX = x;
-		x = xStore + xResolution / (perspectivePlane/ScanRes);
+		x = xStore + (xResolutionScreen / (perspectivePlane/ScanRes));
 		count++;
 		//SDL_RenderPresent(rendererView);
 	}
-	SDL_Rect Gun = { 0, 0, 800, 800 };
-	SDL_RenderCopy(rendererView, Gun_Tx, &Gun, &Gun);
+	SDL_Rect Gun_tx = { 0, 0, xResolutionScreen, yResolutionScreen };
+	if (shoot == 0)
+	{
+		SDL_Rect Gun = { 0, gunHeight, xResolutionScreen, yResolutionScreen };
+		SDL_RenderCopy(rendererView, Gun_Tx, &Gun_tx, &Gun);
+	}
+	else {
+		SDL_Rect GunShot = { 0, gunHeight, xResolutionScreen, yResolutionScreen };
+		SDL_RenderCopy(rendererView, GunEx_Tx, &Gun_tx, &GunShot);
+	}
+	
 }
 
 void Game::render(int map[xGrid][yGrid], int xGridSize, int yGridSize)

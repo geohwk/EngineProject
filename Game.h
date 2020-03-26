@@ -41,5 +41,7 @@ private:
 	SDL_Texture* Cobble_Tx;
 	SDL_Texture* Sky_Tx;
 	SDL_Texture* Gun_Tx;
+	SDL_Texture* GunEx_Tx;
+	SDL_Texture* Enemy_Tx;
 };
 
