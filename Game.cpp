@@ -13,7 +13,10 @@
 #define RotationMultiplier 4
 #define textureDim 180
 #define planeDistance 50
-#define ScanInc 0.5
+#define ScanInc 0.3
+#define setDistanceMultiplier 3
+#define textureWidth 1200
+#define textureHeight 800
 
 using namespace std;
 
@@ -30,7 +33,7 @@ Game::~Game()
 const int perspectivePlane = 100;
 constexpr int perspectiveWidth = perspectivePlane / ScanRes;
 
-int shoot = 0;
+int shoot = 0, walkingFlag = 0;
 int colour;
 int gunHeight = 10, up = 0;
 int wallSide[perspectiveWidth];
@@ -39,6 +42,9 @@ float scannedViewAngle[perspectiveWidth];
 char scannedViewColour[perspectiveWidth];
 float scannedViewX[perspectiveWidth];
 float scannedViewY[perspectiveWidth]; //make these based on perspective plane size (perspectivePlane/0.5)
+float scannedEntityX[perspectiveWidth];
+float scannedEntityY[perspectiveWidth];
+float scannedEntityColour[perspectiveWidth];
 
 int viewPointCount = 0;
 
@@ -91,7 +97,8 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 
 
-	Loading_Surf = SDL_LoadBMP("brickTexture.bmp");
+	//Loading_Surf = SDL_LoadBMP("brickTexture.bmp");
+	Loading_Surf = SDL_LoadBMP("bricks.bmp");
 	
 	if (Loading_Surf == NULL)
 	{
@@ -129,7 +136,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 	}
 	GunEx_Tx = SDL_CreateTextureFromSurface(rendererView, Loading_Surf);
 	
-	Loading_Surf = SDL_LoadBMP("jessface.bmp");
+	Loading_Surf = SDL_LoadBMP("mob.bmp");
 	if (Loading_Surf == NULL)
 	{
 		cout << "Unable to load image" << endl;
@@ -148,6 +155,14 @@ void Game::handleEvents(int map[xGrid][yGrid])
 	const Uint8* keystate = SDL_GetKeyboardState(NULL);
 	SDL_PumpEvents();
 	shoot = 0;
+	if (keystate[SDL_SCANCODE_LSHIFT])
+	{
+		distanceMultiplier = setDistanceMultiplier + 3;
+	}
+	if (!keystate[SDL_SCANCODE_LSHIFT])
+	{
+		distanceMultiplier = setDistanceMultiplier;
+	}
 	if (keystate[SDL_SCANCODE_SPACE])
 	{
 		int randomNum = rand() % 100;
@@ -164,7 +179,7 @@ void Game::handleEvents(int map[xGrid][yGrid])
 	if (keystate[SDL_SCANCODE_LEFT])
 	{
 		bearing = bearing - RotationMultiplier;
-		if (bearing == (0 - RotationMultiplier))
+		if (bearing < 0)
 		{
 			bearing = 360 - RotationMultiplier;
 		}
@@ -214,6 +229,7 @@ void Game::handleEvents(int map[xGrid][yGrid])
 	}
 	if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_S])
 	{
+		walkingFlag = 1;
 		if (up == 0)
 		{
 			gunHeight = gunHeight + 10;
@@ -228,6 +244,25 @@ void Game::handleEvents(int map[xGrid][yGrid])
 			if (gunHeight <= 0)
 			{
 				up = 0;
+			}
+		}
+	}
+	if (!(keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_S]) && (walkingFlag == 1))
+	{
+		if (up == 0)
+		{
+			gunHeight = gunHeight + 10;
+			if (gunHeight >= 100)
+			{
+				up = 1;
+			}
+		}
+		if (up == 1)
+		{
+			gunHeight = gunHeight - 10;
+			if (gunHeight <= 0)
+			{
+				walkingFlag = 0;
 			}
 		}
 	}
@@ -317,6 +352,11 @@ void Game::update(int map[xGrid][yGrid])
 	scan(map);
 	SDL_SetRenderDrawColor(rendererMap, 0, 250, 0, 255);
 	view();
+	for (int j = 0; j < perspectiveWidth; j++)
+	{
+		scannedEntityColour[j] = 0;
+	}
+
 }
 
 void Game::scan(int map[xGrid][yGrid])
@@ -357,8 +397,8 @@ void Game::scan(int map[xGrid][yGrid])
 				float temp = 0;
 				roundedX = round(leftScanX);
 				roundedY = round(leftScanY);
-				
-//TODO: Work out how to determine when section of texture is on the gridpoint
+
+				//TODO: Work out how to determine when section of texture is on the gridpoint
 				if ((int)roundedX % 40 == 0) //Side is facing sideways (along X axis) 
 				{
 					if (leftBearing < 360 && leftBearing >= 180)
@@ -374,11 +414,11 @@ void Game::scan(int map[xGrid][yGrid])
 				{
 					if (leftBearing <= 270 && leftBearing >= 90)
 					{
-					temp = 40 - fmod(leftScanX, 40); //Down facing
+						temp = 40 - fmod(leftScanX, 40); //Down facing
 					}
 					else {
 						temp = (fmod(leftScanX, 40)); //Up facing
-						
+
 					}
 					side = 1;
 				}
@@ -393,10 +433,18 @@ void Game::scan(int map[xGrid][yGrid])
 				scannedViewColour[viewPointCount] = colour;
 				scannedViewX[viewPointCount] = leftScanX;
 				scannedViewY[viewPointCount] = leftScanY;
+
+				if (scannedEntityColour[viewPointCount] != 4)
+				{
+					scannedEntityColour[viewPointCount] = 0;
+				}
+				
 				viewPointCount++;
+				
 				SDL_RenderDrawLine(rendererMap, xPosPlayer, yPosPlayer, leftScanX, leftScanY);
 				
 				flag = 1;
+
 			}
 			else
 			{
@@ -453,7 +501,13 @@ bool Game::collisionCheck(int map[xGrid][yGrid], int xPosPlayer, int yPosPlayer)
 	if (map[arrayCellY][arrayCellX] == 4) //Point is in entity collision block
 	{
 		colour = 4;
-		return true;
+		if (scannedEntityColour[viewPointCount] != colour)
+		{
+			scannedEntityColour[viewPointCount] = colour;
+			scannedEntityX[viewPointCount] = xPosPlayer;
+			scannedEntityY[viewPointCount] = yPosPlayer;
+		}
+		return false;
 	}
 }
 
@@ -468,27 +522,34 @@ void Game::view()
 	int count = 0;
 	int storedX = 0;
 	string desiredTx;
-	double d, h, yTop, yBottom, x = 0, theta, m1, m2;
+	double d, dEntity, h, hEntity, yTop, yBottom, yTopEntity, yBottomEntity, x = 0, theta, m1, m2;
 	double xStore;
 	int width;
 	while (count < (perspectivePlane/ScanRes))
 	{
 		d = cos(scannedViewAngle[count] * (M_PI / 180))*sqrt(pow((xPosPlayer - scannedViewX[count]), 2) + pow((yPosPlayer - scannedViewY[count]), 2));
+		dEntity = cos(scannedViewAngle[count] * (M_PI / 180))*sqrt(pow((xPosPlayer - scannedEntityX[count]), 2) + pow((yPosPlayer - scannedEntityY[count]), 2));
+		
 		h = yResolutionScreen / d * WallHeight;
+		hEntity = yResolutionScreen / dEntity * WallHeight;
+
+		yTopEntity = yResolutionScreen / 2 + hEntity / 2;
+		yBottomEntity = yResolutionScreen / 2 - hEntity / 2;
+
 		yTop = yResolutionScreen / 2 + h / 2;
 		yBottom = yResolutionScreen / 2 - h / 2;
 		SDL_SetRenderDrawColor(rendererView, 0, 250, 0, 255);
 		xStore = x;
 		
-		width = fabs((((texturePosition[count + 1] - texturePosition[count])/40 * 100)));
+		width = fabs((((texturePosition[count + 1] - texturePosition[count])/40 * textureWidth)));
 		if (width == 0)
 		{
 			width = 1;
 		}
 		SDL_Rect wall = { x, yResolutionScreen - yTop, xResolutionScreen / (perspectivePlane / ScanRes) , yTop - yBottom };
-		SDL_Rect wallex = { (texturePosition[count]/40)*100, 0,width, 200  };
-
+		SDL_Rect wallex = { (texturePosition[count]/40)*textureWidth, 0,width, textureHeight  };
 		
+		SDL_Rect entityRect = { x, yResolutionScreen - yTopEntity, xResolutionScreen / (perspectivePlane / ScanRes) , yTopEntity - yBottomEntity };
 
 		if (scannedViewColour[count] == 1)
 		{
@@ -512,21 +573,34 @@ void Game::view()
 			SDL_RenderCopy(rendererView, Cobble_Tx, &wallex, &wall);
 		}
 
+		/*
 		if (scannedViewColour[count] == 4)
 		{
 			SDL_RenderCopy(rendererView, Enemy_Tx, &wallex, &wall);
 		}
+		*/
 
 		SDL_Rect ceilingex = { (texturePosition[count] / 40) * 100, 0,width, 200 };
 		
-		SDL_SetRenderDrawColor(rendererView, 218, 218, 218, 255);
+		SDL_SetRenderDrawColor(rendererView, 0, 0, 0, 255);
 		SDL_Rect ceiling = { x, 0, fabs(((xStore + xResolutionScreen) / (perspectivePlane / ScanRes))), yResolutionScreen - yTop};
 		SDL_RenderCopy(rendererView, Sky_Tx, &ceilingex, &ceiling);
 		//SDL_RenderFillRect(rendererView, &ceiling);
 			
-		SDL_SetRenderDrawColor(rendererView, 150, 150, 150, 255);
+		SDL_SetRenderDrawColor(rendererView, 100, 150, 150, 255);
 		SDL_Rect floor = { x, yTop, fabs(((xStore + xResolutionScreen) / (perspectivePlane / ScanRes))), yResolutionScreen - yBottom};
 		SDL_RenderFillRect(rendererView, &floor);
+		
+		if (scannedEntityColour[count] == 4)
+		{
+			SDL_RenderCopy(rendererView, Enemy_Tx, &wallex, &entityRect);
+		}
+		
+		
+		
+		
+		
+		
 		storedX = x;
 		x = xStore + (xResolutionScreen / (perspectivePlane/ScanRes));
 		count++;
@@ -551,7 +625,7 @@ void Game::render(int map[xGrid][yGrid], int xGridSize, int yGridSize)
 	
 
 	//Setup Actual draw colour
-	SDL_SetRenderDrawColor(rendererMap, 242, 0, 0, 255);
+	SDL_SetRenderDrawColor(rendererMap, 0, 100, 100, 255);
 
 	//Draws 2D Map
 	drawMap(map, xGridSize, yGridSize);
